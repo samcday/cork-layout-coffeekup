@@ -7,5 +7,6 @@
   },
   "license": "BSD",
   "dependencies": {
+    "coffeecup": "~0.3.16"
   }
 }

@@ -10,7 +10,7 @@ templates =
 class AnnexHandler
 	constructor: (@annex) ->
 	init: (files, cb) ->
-		async.forEach files, @processFile, cb
+		cb()
 	processFile: (file, cb) =>
 		switch file
 			when "layout.coffee" then @_compileTemplate file, "content", cb
@@ -24,8 +24,6 @@ class AnnexHandler
 	layoutBlogPost: (post, cb) ->
 		process.nextTick ->
 			return cb null, post.content unless templates.post
-			console.log (templates.post
-				locals: post)
 			cb null, (templates.post
 				locals: post)
 	_compileTemplate: (file, target, cb) ->

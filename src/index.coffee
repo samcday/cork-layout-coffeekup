@@ -1,3 +1,4 @@
+_ = require 'underscore'
 fs = require "fs"
 path = require "path"
 coffeekup = require "coffeecup"
@@ -21,11 +22,15 @@ class AnnexHandler
 			cb null, (templates.content
 				locals:
 					content: content)
-	layoutBlogPost: (post, cb) ->
+	layoutBlogPost: (post, nextPost, prevPost, content, cb) ->
 		process.nextTick ->
-			return cb null, post.content unless templates.post
+			return cb() unless templates.post
+			locals =
+				post: (_.extend { content: content }, post)
+				nextPost: nextPost
+				prevPost: prevPost
 			cb null, (templates.post
-				locals: post)
+				locals: locals)
 	_compileTemplate: (file, target, cb) ->
 		fs.readFile (@annex.pathTo file), "utf8", (err, template) ->
 			templates[target] = coffeekup.compile template, 

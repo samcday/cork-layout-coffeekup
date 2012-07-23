@@ -22,20 +22,26 @@ class AnnexHandler
 			cb null, (templates.content
 				locals:
 					content: content)
-	layoutBlogPost: (post, nextPost, prevPost, content, cb) ->
+	layoutBlogPost: (post, content, meta, cb) ->
 		process.nextTick ->
 			return cb() unless templates.post
 			locals =
 				post: (_.extend { content: content }, post)
-				nextPost: nextPost
-				prevPost: prevPost
+				nextPost: meta.nextPost
+				prevPost: meta.prevPost
+				isArchive: meta.archive
 			cb null, (templates.post
 				locals: locals)
 	_compileTemplate: (file, target, cb) ->
+		self = @
 		fs.readFile (@annex.pathTo file), "utf8", (err, template) ->
-			templates[target] = coffeekup.compile template, 
-				locals: true
-				hardcode: {}
+			try
+				templates[target] = coffeekup.compile template, 
+					locals: true
+					hardcode: {}
+			catch e
+				self.annex.log.warn "Error parsing layout #{file}"
+				self.annex.log.warn e
 			cb()
 module.exports = (annex) ->
 	return (new AnnexHandler annex)

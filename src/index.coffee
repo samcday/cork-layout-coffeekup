@@ -5,7 +5,7 @@ coffeekup = require "coffeecup"
 async = require "async"
 
 templates = 
-	content: null
+	page: null
 	post: null
 	category: null
 
@@ -16,39 +16,43 @@ class AnnexHandler
 		cb()
 	processTemplate: (file, cb) =>
 		switch file
-			when "layout.coffee" then @_compileTemplate file, "content", cb
+			when "layout.coffee" then @_compileTemplate file, "page", cb
 			when "post.coffee" then @_compileTemplate file, "post", cb
 			when "category.coffee" then @_compileTemplate file, "category", cb
 			else cb()
-	layoutContent: (content, cb) ->
-		return cb() unless templates.content
-		cb null, (templates.content locals: content: content)
+	layoutPage: (content, meta, cb) ->
+		@_renderTemplate "page", { _meta: meta, content: content }, cb
 	layoutBlogPost: (post, meta, cb) ->
-		return cb() unless templates.post
 		locals =
 			post: post
 			nextPost: meta.nextPost
 			prevPost: meta.prevPost
 			isArchive: meta.archive
-		cb null, (templates.post locals: locals)
+		@_renderTemplate "post", locals, cb
 	layoutBlogCategory: (type, name, posts, cb) ->
-		return cb() unless templates.category
 		locals = 
 			type: type
 			name: name
 			posts: posts
-		cb null, (templates.category locals: locals)
-
+		@_renderTemplate "category", locals, cb
+	_renderTemplate: (name, locals, cb) ->
+		return cb() unless templates[name]
+		try
+			cb null, (templates[name] locals: locals)
+		catch e
+			@annex.log.warn "Error rendering template #{name}"
+			@annex.log.warn e
+			cb()
 	_compileTemplate: (file, target, cb) ->
-		self = @
-		fs.readFile (@annex.pathTo file), "utf8", (err, template) ->
+		fs.readFile (@annex.pathTo file), "utf8", (err, template) =>
 			try
 				templates[target] = coffeekup.compile template, 
 					locals: true
 					hardcode: {}
 			catch e
-				self.annex.log.warn "Error parsing layout #{file}"
-				self.annex.log.warn e
+				@annex.log.warn "Error parsing layout #{file}"
+				@annex.log.warn e
 			cb()
+
 module.exports = (annex) ->
 	return (new AnnexHandler annex)

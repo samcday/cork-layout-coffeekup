@@ -7,6 +7,7 @@ async = require "async"
 templates = 
 	content: null
 	post: null
+	category: null
 
 class AnnexHandler
 	constructor: (@annex) ->
@@ -17,24 +18,27 @@ class AnnexHandler
 		switch file
 			when "layout.coffee" then @_compileTemplate file, "content", cb
 			when "post.coffee" then @_compileTemplate file, "post", cb
+			when "category.coffee" then @_compileTemplate file, "category", cb
 			else cb()
 	layoutContent: (content, cb) ->
 		return cb() unless templates.content
-		process.nextTick ->
-			cb null, (templates.content
-				locals:
-					content: content)
+		cb null, (templates.content locals: content: content)
 	layoutBlogPost: (post, meta, cb) ->
 		return cb() unless templates.post
-		process.nextTick ->
-			return cb() unless templates.post
-			locals =
-				post: post
-				nextPost: meta.nextPost
-				prevPost: meta.prevPost
-				isArchive: meta.archive
-			cb null, (templates.post
-				locals: locals)
+		locals =
+			post: post
+			nextPost: meta.nextPost
+			prevPost: meta.prevPost
+			isArchive: meta.archive
+		cb null, (templates.post locals: locals)
+	layoutBlogCategory: (type, name, posts, cb) ->
+		return cb() unless templates.category
+		locals = 
+			type: type
+			name: name
+			posts: posts
+		cb null, (templates.category locals: locals)
+
 	_compileTemplate: (file, target, cb) ->
 		self = @
 		fs.readFile (@annex.pathTo file), "utf8", (err, template) ->

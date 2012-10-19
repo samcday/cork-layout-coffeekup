@@ -37,11 +37,13 @@ class AnnexHandler
 		@_renderTemplate "category", locals, cb
 	_renderTemplate: (name, locals, cb) ->
 		return cb() unless templates[name]
+		provided = 
+			_: _
 		try
-			cb null, (templates[name] locals: locals)
+			cb null, (templates[name] locals: _.extend {}, provided, locals)
 		catch e
 			@annex.log.warn "Error rendering template #{name}"
-			@annex.log.warn e
+			@annex.log.error e
 			cb()
 	_compileTemplate: (file, target, cb) ->
 		fs.readFile (@annex.pathTo file), "utf8", (err, template) =>

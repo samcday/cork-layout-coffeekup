@@ -24,11 +24,13 @@ class AnnexHandler
 			else cb()
 	layoutPage: (content, meta, cb) ->
 		@_renderTemplate "page", { _meta: meta, content: content }, cb
-	layoutBlogPost: (post, meta, cb) ->
+	layoutBlogPost: (blog, post, meta, cb) ->
+		[nextPost, prevPost] = blog.getNeighbours post.slug
 		locals =
+			blog: blog
 			post: post
-			nextPost: meta.nextPost
-			prevPost: meta.prevPost
+			nextPost: nextPost
+			prevPost: prevPost
 			isArchive: meta.archive
 		@_renderTemplate "post", locals, cb
 	layoutBlogCategory: (type, name, posts, cb) ->
@@ -37,10 +39,11 @@ class AnnexHandler
 			name: name
 			posts: posts
 		@_renderTemplate "category", locals, cb
-	layoutBlogArchive: (page, totalPages, posts, cb) ->
+	layoutBlogArchive: (blog, page, posts, cb) ->
 		locals = 
+			blog: blog
 			page: page
-			totalPages: totalPages
+			totalPages: blog.numPages
 			posts: posts
 		@_renderTemplate "archive", locals, cb
 	_renderTemplate: (name, locals, cb) ->

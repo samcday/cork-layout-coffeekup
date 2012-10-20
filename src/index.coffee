@@ -8,6 +8,7 @@ templates =
 	page: null
 	post: null
 	category: null
+	archive: null
 
 class AnnexHandler
 	constructor: (@annex) ->
@@ -19,6 +20,7 @@ class AnnexHandler
 			when "layout.coffee" then @_compileTemplate file, "page", cb
 			when "post.coffee" then @_compileTemplate file, "post", cb
 			when "category.coffee" then @_compileTemplate file, "category", cb
+			when "archive.coffee" then @_compileTemplate file, "archive", cb
 			else cb()
 	layoutPage: (content, meta, cb) ->
 		@_renderTemplate "page", { _meta: meta, content: content }, cb
@@ -35,6 +37,12 @@ class AnnexHandler
 			name: name
 			posts: posts
 		@_renderTemplate "category", locals, cb
+	layoutBlogArchive: (page, totalPages, posts, cb) ->
+		locals = 
+			page: page
+			totalPages: totalPages
+			posts: posts
+		@_renderTemplate "archive", locals, cb
 	_renderTemplate: (name, locals, cb) ->
 		return cb() unless templates[name]
 		provided = 
